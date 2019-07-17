@@ -48,7 +48,7 @@ public class StarscreamRTM: RTMWebSocket, WebSocketDelegate {
 
     public func sendMessage(_ message: String) throws {
         guard webSocket != nil else {
-            throw SlackError.rtmConnectionError
+            throw SKError.rtmConnectionError
         }
         webSocket?.write(string: message)
     }

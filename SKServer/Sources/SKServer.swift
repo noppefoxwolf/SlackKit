@@ -21,41 +21,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if !COCOAPODS
-@_exported import SKCore
-#endif
+import SKCore
+import SKWebAPI
 
-public protocol SlackKitServer {
-    func start()
-}
+public struct SKServer {
 
-public protocol Middleware {
-    func respond(to request: (RequestType, ResponseType)) -> (RequestType, ResponseType)
-}
-
-public final class SKServer {
-    internal let server: SlackKitServer
-
-    public init?(server: SlackKitServer? = nil, responder: SlackKitResponder) {
-        if let server = server {
-            self.server = server
+    @discardableResult
+    public init(operations: [SKOperation], app: AppConfig?, auth: ((OAuthResponse) -> ())?) {
+        // Configure oauth route
+        if let app = app {
+            var newOperations = operations
+            newOperations.append(OAuth(config: app, response: auth))
+            SmokeServer(operations: newOperations)
         } else {
-            self.server = SwifterServer(responder: responder)
+            SmokeServer(operations: operations)
         }
-    }
-
-    public convenience init?(server: SlackKitServer? = nil, responder: SlackKitResponder, oauth: OAuthConfig) {
-        var res = responder
-        res.routes.append(SKServer.oauthRequestRoute(config: oauth))
-        self.init(server: server, responder: res)
-    }
-
-    private static func oauthRequestRoute(config: OAuthConfig) -> RequestRoute {
-        let oauth = OAuthMiddleware(config: config)
-        return RequestRoute(path: "/oauth", middleware: oauth)
-    }
-
-    public func start() {
-        server.start()
     }
 }

@@ -1,0 +1,4 @@
+module CNIOOpenSSL {
+    umbrella "/Users/pzignego/Developer/SlackKit/.build/checkouts/swift-nio-ssl.git-7323738614475658507/Sources/CNIOOpenSSL/include"
+    export *
+}

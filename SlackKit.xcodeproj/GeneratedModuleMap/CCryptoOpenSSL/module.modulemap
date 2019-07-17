@@ -1,0 +1,4 @@
+module CCryptoOpenSSL {
+    umbrella "/Users/pzignego/Developer/SlackKit/.build/checkouts/crypto/Sources/CCryptoOpenSSL/include"
+    export *
+}

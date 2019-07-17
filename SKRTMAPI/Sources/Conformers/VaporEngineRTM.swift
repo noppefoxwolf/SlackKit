@@ -78,7 +78,7 @@ public class VaporEngineRTM: RTMWebSocket {
     }
 
     public func sendMessage(_ message: String) throws {
-        guard let websocket = websocket else { throw SlackError.rtmConnectionError }
+        guard let websocket = websocket else { throw SKError.rtmConnectionError }
         websocket.send(message)
     }
 }

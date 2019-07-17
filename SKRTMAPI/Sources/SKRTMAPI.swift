@@ -38,10 +38,10 @@ public protocol RTMWebSocket {
     func sendMessage(_ message: String) throws
 }
 
-public protocol RTMAdapter: class {
-    func initialSetup(json: [String: Any], instance: SKRTMAPI)
-    func notificationForEvent(_ event: Event, type: EventType, instance: SKRTMAPI)
-    func connectionClosed(with error: Error, instance: SKRTMAPI)
+public protocol RTMAdapter {
+    func initialSetup(json: [String: Any])
+    func notificationForEvent(_ event: Event, type: EventType)
+    func connectionClosed(with error: Error)
 }
 
 public protocol RTMDelegate: class {
@@ -89,7 +89,7 @@ public final class SKRTMAPI: RTMDelegate {
                 success: {(response) in
                     self.connectWithResponse(response)
                 }, failure: { (error) in
-                    self.adapter?.connectionClosed(with: error, instance: self)
+                    self.adapter?.connectionClosed(with: error)
                 }
             )
         } else {
@@ -100,7 +100,7 @@ public final class SKRTMAPI: RTMDelegate {
                 success: {(response) in
                     self.connectWithResponse(response)
                 }, failure: { (error) in
-                    self.adapter?.connectionClosed(with: error, instance: self)
+                    self.adapter?.connectionClosed(with: error)
                 }
             )
         }
@@ -112,7 +112,7 @@ public final class SKRTMAPI: RTMDelegate {
 
     public func sendMessage(_ message: String, channelID: String, id: String? = nil) throws {
         guard connected else {
-            throw SlackError.rtmConnectionError
+            throw SKError.rtmConnectionError
         }
         do {
             let string = try format(message: message, channel: channelID, id: id)
@@ -124,7 +124,7 @@ public final class SKRTMAPI: RTMDelegate {
 
     public func sendThreadedMessage(_ message: String, channelID: String, threadTs: String, broadcastReply: Bool = false) throws {
         guard connected else {
-            throw SlackError.rtmConnectionError
+            throw SKError.rtmConnectionError
         }
         do {
             let string = try format(message: message, channel: channelID, threadTs: threadTs, broadcastReply: broadcastReply)
@@ -142,7 +142,7 @@ public final class SKRTMAPI: RTMDelegate {
             return
         }
         self.rtm.connect(url: url)
-        self.adapter?.initialSetup(json: response, instance: self)
+        self.adapter?.initialSetup(json: response)
     }
 
     private func format(message: String,
@@ -163,7 +163,7 @@ public final class SKRTMAPI: RTMDelegate {
             let data = try? JSONSerialization.data(withJSONObject: filterNilParameters(json), options: []),
             let str = String(data: data, encoding: String.Encoding.utf8)
         else {
-            throw SlackError.clientJSONError
+            throw SKError.clientJSONError
         }
         return str
     }
@@ -184,14 +184,14 @@ public final class SKRTMAPI: RTMDelegate {
 
     private func sendRTMPing() throws {
         guard connected else {
-            throw SlackError.rtmConnectionError
+            throw SKError.rtmConnectionError
         }
         let json: [String: Any] = [
             "id": Date().slackTimestamp,
             "type": "ping"
         ]
         guard let data = try? JSONSerialization.data(withJSONObject: json, options: []) else {
-            throw SlackError.clientJSONError
+            throw SKError.clientJSONError
         }
         if let string = String(data: data, encoding: String.Encoding.utf8) {
             ping = json["id"] as? Double
@@ -222,7 +222,7 @@ public final class SKRTMAPI: RTMDelegate {
         if options.reconnect {
             connect()
         } else {
-            adapter?.connectionClosed(with: SlackError.rtmConnectionError, instance: self)
+            adapter?.connectionClosed(with: SKError.rtmConnectionError)
         }
     }
 
@@ -255,6 +255,6 @@ public final class SKRTMAPI: RTMDelegate {
         default:
             break
         }
-        adapter?.notificationForEvent(event, type: type, instance: self)
+        adapter?.notificationForEvent(event, type: type)
     }
 }

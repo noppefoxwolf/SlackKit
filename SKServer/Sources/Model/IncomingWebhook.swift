@@ -21,20 +21,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-public struct IncomingWebhook {
-    public let url: String?
-    public let channel: String?
-    public let configurationURL: String?
+public struct IncomingWebhook: Codable {
+    public let url: String
+    public let channel: String
+    public let configuration_url: String
     public let username: String?
-    public let iconEmoji: String?
-    public let iconURL: String?
+    public let icon_emoji: String?
+    public let icon_url: String?
 
-    internal init(webhook: [String: Any]?) {
-        url = webhook?["url"] as? String
-        channel = webhook?["channel"] as? String
-        configurationURL = webhook?["configuration_url"] as? String
+    init?(webhook: [String: Any]?) {
+        guard
+            let url = webhook?["url"] as? String,
+            let channel = webhook?["channel"] as? String,
+            let configuration_url = webhook?["configuration_url"] as? String
+        else {
+            return nil
+        }
+        self.url = url
+        self.channel = channel
+        self.configuration_url = configuration_url
         username = webhook?["username"] as? String
-        iconEmoji = webhook?["icon_emoji"] as? String
-        iconURL = webhook?["icon_url"] as? String
+        icon_emoji = webhook?["icon_emoji"] as? String
+        icon_url = webhook?["icon_url"] as? String
     }
 }

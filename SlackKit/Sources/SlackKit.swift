@@ -30,96 +30,32 @@ import Foundation
 @_exported import SKWebAPI
 #endif
 
-public final class SlackKit: RTMAdapter {
+public final class SlackKit {
 
-    public typealias EventClosure = (Event, ClientConnection?) -> Void
-    internal typealias TypedEvent = (EventType, EventClosure)
-    internal var callbacks = [TypedEvent]()
-    internal(set) public var server: SKServer?
-    internal(set) public var clients: [String: ClientConnection] = [:]
-
-    /// Return the `SKRTMAPI` instance of the first client
-    public var rtm: SKRTMAPI? {
-        return clients.values.first?.rtm
-    }
-    /// Return the `WebAPI` instance of the first client
-    public var webAPI: WebAPI? {
-        return clients.values.first?.webAPI
-    }
+    var server: SKServer?
+    // teamId_authToken: SlackApp
+    var apps: [String: SlackApp] = [:]
 
     public init() {}
 
-    public func addWebAPIAccessWithToken(_ token: String) {
-        let webAPI = WebAPI(token: token)
-        if let clientConnection = clients[token] {
-            clientConnection.webAPI = webAPI
-        } else {
-            clients[token] = ClientConnection(client: nil, rtm: nil, webAPI: webAPI)
-        }
+    public init(app: AppConfig, operations: [SKOperation]) {
+        addAppServer(operations: operations, app: app)
     }
 
-    public func addRTMBotWithAPIToken(
-        _ token: String,
-        client: Client? = Client(),
-        options: RTMOptions = RTMOptions(),
-        rtm: RTMWebSocket? = nil
-    ) {
-        let rtm = SKRTMAPI(withAPIToken: token, options: options, rtm: rtm)
-        rtm.adapter = self
-
-        if let clientConnection = clients[token] {
-            clientConnection.rtm = rtm
-        } else {
-            clients[token] = ClientConnection(client: client, rtm: rtm, webAPI: nil)
-        }
-        clients[token]?.rtm?.connect()
+    public func addServer(operations: [SKOperation]) {
+        server = SKServer(operations: operations, app: nil, auth: nil)
     }
 
-    public func addServer(_ server: SlackKitServer? = nil, responder: SlackKitResponder? = nil, oauth: OAuthConfig? = nil) {
-        var responder: SlackKitResponder = responder ?? SlackKitResponder(routes: [])
-        if let oauth = oauth {
-            responder.routes.append(oauthRequestRoute(config: oauth))
-        }
-        self.server = SKServer(server: server, responder: responder)
-        self.server?.start()
+    public func addAppServer(operations: [SKOperation], app: AppConfig) {
+        server = SKServer(operations: operations, app: app, auth: { [weak self] response in
+            self?.authResponse(response)
+        })
     }
 
-    private func oauthRequestRoute(config: OAuthConfig) -> RequestRoute {
-        let oauth = OAuthMiddleware(config: config) { authorization in
-            // User
-            if let token = authorization.accessToken {
-                self.addWebAPIAccessWithToken(token)
-            }
-            // Bot User
-            if let token = authorization.bot?.botToken {
-                self.addRTMBotWithAPIToken(token)
-            }
-        }
-        return RequestRoute(path: "/oauth", middleware: oauth)
-    }
+    // MARK: OAuth
 
-    // MARK: - RTM Adapter
-    public func initialSetup(json: [String: Any], instance: SKRTMAPI) {
-        clients[instance.token]?.client?.initialSetup(JSON: json)
-    }
-
-    public func notificationForEvent(_ event: Event, type: EventType, instance: SKRTMAPI) {
-        let clientConnection = clients[instance.token]
-        clientConnection?.client?.notificationForEvent(event, type: type)
-        executeCallbackForEvent(event, type: type, clientConnection: clientConnection)
-    }
-
-    public func connectionClosed(with error: Error, instance: SKRTMAPI) {}
-
-    // MARK: - Callbacks
-    public func notificationForEvent(_ type: EventType, event: @escaping EventClosure) {
-        callbacks.append((type, event))
-    }
-
-    private func executeCallbackForEvent(_ event: Event, type: EventType, clientConnection: ClientConnection?) {
-        let cbs = callbacks.filter {$0.0 == type}
-        for callback in cbs {
-            callback.1(event, clientConnection)
-        }
+    func authResponse(_ response: OAuthResponse) {
+        let appId = "\(response.teamID)_\(response.accessToken)"
+        apps[appId] = SlackApp(operations: [], token: response.accessToken, botToken: response.bot?.bot_access_token)
     }
 }

@@ -40,7 +40,7 @@ SKRTMAPI.dependencies = [
 #endif
 
 let SKServer: Target = .target(name: "SKServer",
-                               dependencies: ["SKCore", "SKWebAPI", "Swifter"],
+                               dependencies: ["SKCore", "SKWebAPI", "Swifter", "SmokeHTTP1", "SmokeOperations", "SmokeOperationsHTTP1", "SmokeHTTPClient"],
                                path: "SKServer/Sources")
 
 let SKWebAPI: Target = .target(name: "SKWebAPI",
@@ -58,7 +58,7 @@ let package = Package(
         .library(name: "SlackKit", targets: ["SlackKit"]),
         .library(name: "SKClient", targets: ["SKClient"]),
         .library(name: "SKCore", targets: ["SKCore"]),
-        .library(name: "SKRMTAPI", targets: ["SKRTMAPI"]),
+        .library(name: "SKRTMAPI", targets: ["SKRTMAPI"]),
         .library(name: "SKServer", targets: ["SKServer"]),
         .library(name: "SKWebAPI", targets: ["SKWebAPI"])
     ],
@@ -69,17 +69,25 @@ let package = Package(
 
 #if os(macOS)
 package.dependencies = [
+    .package(url: "https://github.com/amzn/smoke-framework.git", .upToNextMajor(from: "1.0.0")),
+    .package(url: "https://github.com/amzn/smoke-http.git", .upToNextMajor(from: "1.0.0")),
+    .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "0.5.1"),
     .package(url: "https://github.com/httpswift/swifter.git", .upToNextMinor(from: "1.4.5")),
     .package(url: "https://github.com/vapor/websocket", .upToNextMinor(from: "1.1.1")),
     .package(url: "https://github.com/daltoniam/Starscream", .upToNextMinor(from: "3.0.6"))
 ]
 #elseif os(Linux)
 package.dependencies = [
+    .package(url: "https://github.com/amzn/smoke-framework.git", .upToNextMajor(from: "1.0.0")),
+    .package(url: "https://github.com/amzn/smoke-http.git", .upToNextMajor(from: "1.0.0")),
     .package(url: "https://github.com/httpswift/swifter.git", .upToNextMinor(from: "1.4.5")),
     .package(url: "https://github.com/vapor/websocket", .upToNextMinor(from: "1.1.1"))
 ]
 #elseif os(iOS) || os(tvOS)
 package.dependencies = [
+    .package(url: "https://github.com/amzn/smoke-framework.git", .upToNextMajor(from: "1.0.0")),
+    .package(url: "https://github.com/amzn/smoke-http.git", .upToNextMajor(from: "1.0.0")),
+    .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "0.5.1"),
     .package(url: "https://github.com/httpswift/swifter.git", .upToNextMinor(from: "1.4.5")),
     .package(url: "https://github.com/daltoniam/Starscream", .upToNextMinor(from: "3.0.6"))
 ]

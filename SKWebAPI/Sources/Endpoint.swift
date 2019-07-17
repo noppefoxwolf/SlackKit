@@ -21,7 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-public enum Endpoint: String {
+public enum Endpoint: String, RequestEndpoint {
     case apiTest = "api.test"
     case authRevoke = "auth.revoke"
     case authTest = "auth.test"

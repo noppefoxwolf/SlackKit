@@ -767,13 +767,10 @@ extension Client {
 // MARK: - Bots
 extension Client {
     func bot(_ event: Event) {
-        guard
-            let bot = event.bot,
-            let id = bot.id
-        else {
+        guard let bot = event.bot else {
             return
         }
-        bots[id] = bot
+        bots[bot.bot_user_id] = bot
     }
 }
 
@@ -870,8 +867,8 @@ public extension Client {
     }
 
     fileprivate func addBot(_ aBot: [String: Any]) {
-        let bot = Bot(bot: aBot)
-        if let id = bot.id {
+        let bot = Bot(json: aBot)
+        if let id = bot?.bot_user_id {
             bots[id] = bot
         }
     }

@@ -29,11 +29,3 @@ extension SKCoreTests {
     ]
 }
 
-#if !os(macOS)
-public func __allTests() -> [XCTestCaseEntry] {
-    return [
-        testCase(SKClientTests.__allTests),
-        testCase(SKCoreTests.__allTests),
-    ]
-}
-#endif

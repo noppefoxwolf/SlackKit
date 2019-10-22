@@ -298,7 +298,7 @@ extension WebAPI {
             success?((
                 ts: response["ts"] as? String,
                 channel: response["channel"] as? String,
-                message: Message(dictionary: response["channel"] as? [String : Any])))
+                message: Message(dictionary: response["message"] as? [String : Any])))
         }) {(error) in
             failure?(error)
         }

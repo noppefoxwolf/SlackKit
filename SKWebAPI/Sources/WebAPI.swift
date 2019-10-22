@@ -276,7 +276,7 @@ extension WebAPI {
         unfurlMedia: Bool? = nil,
         iconURL: String? = nil,
         iconEmoji: String? = nil,
-        success: (((ts: String?, channel: String?)) -> Void)?,
+        success: (((ts: String?, channel: String?, message: Message?)) -> Void)?,
         failure: FailureClosure?
     ) {
         let parameters: [String: Any?] = [
@@ -295,7 +295,10 @@ extension WebAPI {
             "blocks": encodeBlocks(blocks)
         ]
         networkInterface.request(.chatPostMessage, parameters: parameters, successClosure: {(response) in
-            success?((ts: response["ts"] as? String, response["channel"] as? String))
+            success?((
+                ts: response["ts"] as? String,
+                channel: response["channel"] as? String,
+                message: Message(dictionary: response["channel"] as? [String : Any])))
         }) {(error) in
             failure?(error)
         }
